@@ -1,124 +1,183 @@
-from flask import Flask, render_template, request
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mobile Price Prediction</title>
 
-app = Flask(__name__)
-
-# ==============================
-# Load Dataset
-# ==============================
-data = pd.read_csv("mobile_price.csv")
-
-# Features and target
-X = data.drop("price_range", axis=1)
-y = data["price_range"]
-
-# ==============================
-# Create and Train Random Forest
-# ==============================
-model = RandomForestClassifier(
-    n_estimators=100,
-    random_state=42
-)
-
-model.fit(X, y)
-
-
-# ==============================
-# Home Page
-# ==============================
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-# ==============================
-# Prediction
-# ==============================
-@app.route("/predict", methods=["POST"])
-def predict():
-
-    try:
-        # Get values from HTML form
-        battery_power = float(request.form["battery_power"])
-        blue = float(request.form["blue"])
-        clock_speed = float(request.form["clock_speed"])
-        dual_sim = float(request.form["dual_sim"])
-        fc = float(request.form["fc"])
-        four_g = float(request.form["four_g"])
-        int_memory = float(request.form["int_memory"])
-        m_dep = float(request.form["m_dep"])
-        mobile_wt = float(request.form["mobile_wt"])
-        n_cores = float(request.form["n_cores"])
-        pc = float(request.form["pc"])
-        px_height = float(request.form["px_height"])
-        px_width = float(request.form["px_width"])
-        ram = float(request.form["ram"])
-        sc_h = float(request.form["sc_h"])
-        sc_w = float(request.form["sc_w"])
-        talk_time = float(request.form["talk_time"])
-        three_g = float(request.form["three_g"])
-        touch_screen = float(request.form["touch_screen"])
-        wifi = float(request.form["wifi"])
-
-        # Create input DataFrame
-        input_data = pd.DataFrame([[
-            battery_power,
-            blue,
-            clock_speed,
-            dual_sim,
-            fc,
-            four_g,
-            int_memory,
-            m_dep,
-            mobile_wt,
-            n_cores,
-            pc,
-            px_height,
-            px_width,
-            ram,
-            sc_h,
-            sc_w,
-            talk_time,
-            three_g,
-            touch_screen,
-            wifi
-        ]], columns=X.columns)
-
-        # Make prediction
-        prediction = model.predict(input_data)[0]
-
-        # Price range names
-        price_ranges = {
-            0: "Low Cost",
-            1: "Medium Cost",
-            2: "High Cost",
-            3: "Very High Cost"
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f2f2f2;
+            padding: 30px;
         }
 
-        result = price_ranges.get(
-            int(prediction),
-            str(prediction)
-        )
+        .container {
+            width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
 
-        return render_template(
-            "index.html",
-            prediction=result
-        )
+        h1 {
+            text-align: center;
+        }
 
-    except Exception as e:
+        .input-box {
+            margin-bottom: 12px;
+        }
 
-        return render_template(
-            "index.html",
-            prediction="Error: " + str(e)
-        )
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
 
-# ==============================
-# Run Flask App
-# ==============================
-if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=10000
-    )
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Mobile Price Prediction</h1>
+
+    <form action="/predict" method="POST">
+
+        <div class="input-box">
+            <label>Battery Power</label>
+            <input type="number" name="battery_power" required>
+        </div>
+
+        <div class="input-box">
+            <label>Bluetooth (0 or 1)</label>
+            <input type="number" name="blue" required>
+        </div>
+
+        <div class="input-box">
+            <label>Clock Speed</label>
+            <input type="number" step="any" name="clock_speed" required>
+        </div>
+
+        <div class="input-box">
+            <label>Dual SIM (0 or 1)</label>
+            <input type="number" name="dual_sim" required>
+        </div>
+
+        <div class="input-box">
+            <label>Front Camera</label>
+            <input type="number" name="fc" required>
+        </div>
+
+        <div class="input-box">
+            <label>4G (0 or 1)</label>
+            <input type="number" name="four_g" required>
+        </div>
+
+        <div class="input-box">
+            <label>Internal Memory</label>
+            <input type="number" name="int_memory" required>
+        </div>
+
+        <div class="input-box">
+            <label>Mobile Depth</label>
+            <input type="number" step="any" name="m_dep" required>
+        </div>
+
+        <div class="input-box">
+            <label>Mobile Weight</label>
+            <input type="number" name="mobile_wt" required>
+        </div>
+
+        <div class="input-box">
+            <label>Number of Cores</label>
+            <input type="number" name="n_cores" required>
+        </div>
+
+        <div class="input-box">
+            <label>Primary Camera</label>
+            <input type="number" name="pc" required>
+        </div>
+
+        <div class="input-box">
+            <label>Pixel Height</label>
+            <input type="number" name="px_height" required>
+        </div>
+
+        <div class="input-box">
+            <label>Pixel Width</label>
+            <input type="number" name="px_width" required>
+        </div>
+
+        <div class="input-box">
+            <label>RAM</label>
+            <input type="number" name="ram" required>
+        </div>
+
+        <div class="input-box">
+            <label>Screen Height</label>
+            <input type="number" name="sc_h" required>
+        </div>
+
+        <div class="input-box">
+            <label>Screen Width</label>
+            <input type="number" name="sc_w" required>
+        </div>
+
+        <div class="input-box">
+            <label>Talk Time</label>
+            <input type="number" name="talk_time" required>
+        </div>
+
+        <div class="input-box">
+            <label>3G (0 or 1)</label>
+            <input type="number" name="three_g" required>
+        </div>
+
+        <div class="input-box">
+            <label>Touch Screen (0 or 1)</label>
+            <input type="number" name="touch_screen" required>
+        </div>
+
+        <div class="input-box">
+            <label>WiFi (0 or 1)</label>
+            <input type="number" name="wifi" required>
+        </div>
+
+        <button type="submit">
+            Predict Price
+        </button>
+
+    </form>
+
+    {% if prediction %}
+        <div class="result">
+            Predicted Price Range:
+            <br><br>
+            {{ prediction }}
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
