@@ -4,44 +4,91 @@ from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
 
-# Load dataset
+# ==============================
+# Load Dataset
+# ==============================
 data = pd.read_csv("mobile_price.csv")
 
-# Separate features and target
+# Features and target
 X = data.drop("price_range", axis=1)
 y = data["price_range"]
 
-# Create Random Forest model
+# ==============================
+# Create and Train Random Forest
+# ==============================
 model = RandomForestClassifier(
     n_estimators=100,
     random_state=42
 )
 
-# Train model
 model.fit(X, y)
 
 
-@app.route("/", methods=["GET", "POST"])
+# ==============================
+# Home Page
+# ==============================
+@app.route("/")
 def home():
+    return render_template("index.html")
 
-    prediction = None
 
-    if request.method == "POST":
+# ==============================
+# Prediction
+# ==============================
+@app.route("/predict", methods=["POST"])
+def predict():
 
-        values = []
+    try:
+        # Get values from HTML form
+        battery_power = float(request.form["battery_power"])
+        blue = float(request.form["blue"])
+        clock_speed = float(request.form["clock_speed"])
+        dual_sim = float(request.form["dual_sim"])
+        fc = float(request.form["fc"])
+        four_g = float(request.form["four_g"])
+        int_memory = float(request.form["int_memory"])
+        m_dep = float(request.form["m_dep"])
+        mobile_wt = float(request.form["mobile_wt"])
+        n_cores = float(request.form["n_cores"])
+        pc = float(request.form["pc"])
+        px_height = float(request.form["px_height"])
+        px_width = float(request.form["px_width"])
+        ram = float(request.form["ram"])
+        sc_h = float(request.form["sc_h"])
+        sc_w = float(request.form["sc_w"])
+        talk_time = float(request.form["talk_time"])
+        three_g = float(request.form["three_g"])
+        touch_screen = float(request.form["touch_screen"])
+        wifi = float(request.form["wifi"])
 
-        for column in X.columns:
-            values.append(float(request.form[column]))
+        # Create input DataFrame
+        input_data = pd.DataFrame([[
+            battery_power,
+            blue,
+            clock_speed,
+            dual_sim,
+            fc,
+            four_g,
+            int_memory,
+            m_dep,
+            mobile_wt,
+            n_cores,
+            pc,
+            px_height,
+            px_width,
+            ram,
+            sc_h,
+            sc_w,
+            talk_time,
+            three_g,
+            touch_screen,
+            wifi
+        ]], columns=X.columns)
 
-        # Create input dataframe
-        new_mobile = pd.DataFrame(
-            [values],
-            columns=X.columns
-        )
+        # Make prediction
+        prediction = model.predict(input_data)[0]
 
-        # Prediction
-        result = model.predict(new_mobile)[0]
-
+        # Price range names
         price_ranges = {
             0: "Low Cost",
             1: "Medium Cost",
@@ -49,14 +96,29 @@ def home():
             3: "Very High Cost"
         }
 
-        prediction = price_ranges[result]
+        result = price_ranges.get(
+            int(prediction),
+            str(prediction)
+        )
 
-    return render_template(
-        "index.html",
-        columns=X.columns,
-        prediction=prediction
-    )
+        return render_template(
+            "index.html",
+            prediction=result
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "index.html",
+            prediction="Error: " + str(e)
+        )
 
 
+# ==============================
+# Run Flask App
+# ==============================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=10000
+    )
